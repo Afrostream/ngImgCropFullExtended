@@ -378,14 +378,6 @@ crop.factory('cropHost', ['$document', '$q', 'cropAreaCircle', 'cropAreaSquare',
             events.trigger('image-updated');
             if (!!imageSource) {
                 var newImage = new Image();
-                if (imageSource instanceof window.Blob) {
-                    newImage.src = URL.createObjectURL(imageSource);
-                } else {
-                    if (imageSource.substring(0, 4).toLowerCase() === 'http' || imageSource.substring(0, 2) === '//') {
-                        newImage.crossOrigin = 'anonymous';
-                    }
-                    newImage.src = imageSource;
-                }
                 newImage.onload = function () {
                     events.trigger('load-done');
 
@@ -471,6 +463,20 @@ crop.factory('cropHost', ['$document', '$q', 'cropAreaCircle', 'cropAreaSquare',
                     events.trigger('load-error');
                 };
                 events.trigger('load-start');
+
+                if (imageSource instanceof window.Blob) {
+                    newImage.src = URL.createObjectURL(imageSource);
+                } else {
+                    if (imageSource.substring(0, 4).toLowerCase() === 'http' || imageSource.substring(0, 2) === '//') {
+                        newImage.crossOrigin = 'anonymous';
+                    }
+                    newImage.src = imageSource;
+                    //resets cache on src of img if it comes back undefined, using a 1x1 blank gif dataURI
+                    if (newImage.complete || newImage.complete === undefined) {
+                        newImage.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+                        newImage.src = src;
+                    }
+                }
             }
         };
 
